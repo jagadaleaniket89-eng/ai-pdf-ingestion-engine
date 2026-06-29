@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Document Ingestion Gateway</title>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Plus Jakarta Sans', sans-serif;
+            background: radial-gradient(circle at top right, #1e1b4b 0%, #0f172a 100%);
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen text-slate-100 flex items-center justify-center p-4 md:p-8">
+
+    <div class="w-full max-w-4xl glass-panel rounded-2xl shadow-2xl overflow-hidden grid grid-cols-1 md:grid-cols-5 animate-fade-in">
+        
+        <div class="md:col-span-2 bg-indigo-950/40 p-6 md:p-8 border-b md:border-b-0 md:border-r border-white/5 flex flex-col justify-between">
+            <div>
+                <div class="h-10 w-10 rounded-xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-6 text-indigo-400 font-bold text-lg">AI</div>
+                <h1 class="text-2xl font-bold tracking-tight text-white mb-2">Ingestion Gateway</h1>
+                <p class="text-sm text-slate-400 leading-relaxed">Securely extract structural analysis, schemas, and summaries from complex documents instantly utilizing Gemini 2.5 Flash.</p>
+            </div>
+            
+            <div class="mt-8 pt-6 border-t border-white/5 text-xs text-slate-500">
+                <p>⚡ Powered by FastAPI & Asynchronous Memory Streams</p>
+            </div>
+        </div>
+
+        <div class="md:col-span-3 p-6 md:p-8 flex flex-col gap-6">
+            <form id="uploadForm" class="space-y-5">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Gateway Credentials</label>
+                    <input type="password" id="password" required placeholder="••••••••••••" 
+                        class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-slate-200 placeholder-slate-600">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Analysis Blueprint (Prompt)</label>
+                    <textarea id="query" rows="3" required
+                        class="w-full bg-slate-900/60 border border-white/10 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all text-slate-200 resize-none">Provide a clear structured summary of this document.</textarea>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Document Stream (PDF)</label>
+                    <div class="relative group border-2 border-dashed border-white/10 hover:border-indigo-500/50 rounded-xl transition-all bg-slate-900/30 p-6 text-center cursor-pointer">
+                        <input type="file" id="fileInput" accept="application/pdf" required class="absolute inset-0 w-full h-full opacity-0 cursor-pointer">
+                        <div class="space-y-2">
+                            <div class="text-slate-400 text-sm font-medium id="fileNameDisplay">Click to browse or drop your PDF here</div>
+                            <div class="text-xs text-slate-500">Max size limit: 50MB</div>
+                        </div>
+                    </div>
+                </div>
+
+                <button type="submit" id="submitBtn"
+                    class="w-full bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm py-3 px-4 rounded-xl transition-all shadow-lg shadow-indigo-600/20 cursor-pointer flex items-center justify-center gap-2">
+                    <span>Process Document Pipeline</span>
+                </button>
+            </form>
+
+            <div id="resultLayer" class="hidden border-t border-white/5 pt-6 space-y-3">
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider">Engine Analysis Output</label>
+                <div id="outputContainer" class="w-full bg-slate-950/50 border border-white/5 rounded-xl p-4 text-sm text-slate-300 leading-relaxed max-h-64 overflow-y-auto whitespace-pre-line font-light">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Visual UX Improvement: Display chosen filename dynamically
+        const fileInput = document.getElementById('fileInput');
+        const display = document.getElementById('fileNameDisplay');
+        fileInput.addEventListener('change', (e) => {
+            if(e.target.files.length > 0) {
+                display.innerText = `📄 ${e.target.files[0].name}`;
+                display.classList.remove('text-slate-400');
+                display.classList.add('text-indigo-400');
+            }
+        });
+
+        // Async API Pipeline Call
+        document.getElementById('uploadForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            
+            const btn = document.getElementById('submitBtn');
+            const resultLayer = document.getElementById('resultLayer');
+            const output = document.getElementById('outputContainer');
+            
+            const file = fileInput.files[0];
+            const query = document.getElementById('query').value;
+            const password = document.getElementById('password').value;
+
+            // Build Form Multi-part Stream Data
+            const formData = new FormData();
+            formData.append('file', file);
+            formData.append('query', query);
+            formData.append('guest_password', password);
+
+            // UI Feedback State Change
+            btn.disabled = true;
+            btn.innerHTML = `<span class="animate-pulse">Analyzing Data Streams...</span>`;
+            resultLayer.classList.remove('hidden');
+            output.innerText = "Connecting to Gemini 2.5 Flash pipeline...";
+            output.classList.remove('text-red-400');
+
+            try {
+                const response = await fetch("/api/summarize", {
+                    method: "POST",
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.detail || "Pipeline failed processing.");
+                }
+
+                // Render Success Layout
+                output.innerText = data.analysis;
+            } catch (err) {
+                output.innerText = `⚠️ Error: ${err.message}`;
+                output.classList.add('text-red-400');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<span>Process Document Pipeline</span>`;
+            }
+        });
+    </script>
+</body>
+</html>
