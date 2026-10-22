@@ -3,8 +3,7 @@
 Upload a PDF (up to 50MB) and get a short or detailed AI analysis.
 Built with FastAPI + Gemini 2.5 Flash. No vector database required.
 
-🔗 **Live demo:** <link>  (free tier: first load may take ~30s)
-![demo](demo.gif)
+🔗 **Live demo:** <https://ai-pdf-ingestion-engine.onrender.com/>  (free tier: first load may take ~30s)
 
 ## Why no vector DB?
 Gemini 2.5 Flash has a long context window and reads PDFs natively
@@ -43,6 +42,4 @@ POST /analyze  (multipart: file, mode, password) → JSON
 - Single-document only, no persistence
 - Add rate limiting, proper auth, tests, Docker
 
-Fill in the “Challenges” section with real problems you hit, because that section gives interviewers the best talking points. Also update your resume bullet to match the README wording so the two stay consistent.
 
-If you paste your main.py endpoint code, I can tell you whether the “asynchronous” and “memory-optimized” claims hold up and how to make them true.
