@@ -25,7 +25,7 @@ Browser → FastAPI (/analyze) → temp file → Gemini API → response
 FastAPI, Google GenAI SDK, HTML5, Render, python-dotenv
 
 ## Run locally
-git clone ...
+git clone <https://github.com/jagadaleaniket89-eng/ai-pdf-ingestion-engine>
 python -m venv venv && source venv/bin/activate
 pip install -r requirements.txt
 cp .env.example .env   # add GEMINI_API_KEY and APP_PASSWORD
